@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bufio"
+	"code_assistant/src/code_analyzer"
 	"code_assistant/src/http_client"
 	"fmt"
 	"log"
@@ -49,7 +50,7 @@ func handleCommand(input string) {
 	case "scan code":
 		// Add implementation for scanning code
 		fmt.Println("Scanning code...")
-		ollamaTest()
+		code_analyzer.AnalyzeDirectory("./src/db")
 	case "list file":
 		// Add implementation for listing files
 		fmt.Println("Listing files...")
