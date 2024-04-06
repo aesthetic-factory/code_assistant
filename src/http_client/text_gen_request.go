@@ -2,6 +2,7 @@ package http_client
 
 import (
 	"bytes"
+	"code_assistant/src/config"
 	"code_assistant/src/llm_prompt"
 	"context"
 	"encoding/json"
@@ -31,8 +32,8 @@ type TextGenResponse struct {
 // Create a TextGenerateRemote request with default value
 func NewTextGenRequest() TextGenRequest {
 	req := TextGenRequest{
-		URL:         "http://192.168.1.141:11434/api/generate",
-		Model:       "dolphin-mistral",
+		URL:         config.AppConfig.Ollama.BaseUrl + "/api/generate",
+		Model:       config.AppConfig.Ollama.TextGenModel,
 		Temperature: 0.2,
 		Top_p:       0.4,
 		Prompt:      "",
@@ -51,6 +52,8 @@ func TextGenerateRemote(req TextGenRequest) (TextGenResponse, error) {
 	if err != nil {
 		return TextGenResponse{}, fmt.Errorf("failed to marshal request JSON: %v", err)
 	}
+
+	fmt.Println(string(reqBody)) //DEBUG
 
 	// Create a context with timeout
 	ctx, cancel := context.WithTimeout(context.Background(), HTTP_TIMEOUT_SEC*time.Second)

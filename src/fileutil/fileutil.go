@@ -20,7 +20,8 @@ func ScanFiles(directory string, extensions []string) ([]string, error) {
 			ext := filepath.Ext(path)
 			for _, allowedExt := range extensions {
 				if strings.EqualFold(ext, allowedExt) {
-					files = append(files, path)
+					absPath, _ := filepath.Abs(path)
+					files = append(files, absPath)
 					break
 				}
 			}

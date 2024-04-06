@@ -3,7 +3,8 @@ package cmd
 import (
 	"bufio"
 	"code_assistant/src/code_analyzer"
-	"code_assistant/src/http_client"
+	"code_assistant/src/config"
+	"code_assistant/src/db"
 	"fmt"
 	"log"
 	"os"
@@ -45,59 +46,94 @@ func handleCommand(input string) {
 		fmt.Println("Available options:")
 		fmt.Println(" - scan code")
 		fmt.Println(" - list file")
+		fmt.Println(" - list function")
 		fmt.Println(" - code explanation")
 		fmt.Println(" - exit")
+
 	case "scan code":
-		// Add implementation for scanning code
-		fmt.Println("Scanning code...")
-		code_analyzer.AnalyzeDirectory("./src/db")
+		var directory string
+		fmt.Print("Enter directory to scan: ")
+		if _, err := fmt.Scanln(&directory); err != nil {
+			directory = config.AppConfig.WorkingDir
+		}
+		if directory == "" {
+			fmt.Println("directory cannot be empty")
+			return
+		}
+		fmt.Printf("Scanning directory %s ...\n", directory)
+		code_analyzer.AnalyzeDirectory(directory)
+
 	case "list file":
-		// Add implementation for listing files
 		fmt.Println("Listing files...")
-		ollamaTest2()
+		listFiles()
+
+	case "list function":
+		fmt.Println("Listing functions...")
+		listFunctions()
+
 	case "code explanation":
 		// Add implementation for code explanation
 		fmt.Println("Explaining code...")
+
 	default:
 		fmt.Println("Invalid command. Type 'help' to see available options.")
 	}
 }
 
-func ollamaTest() {
-	// Example input data
-	req := http_client.TextGenRequest{
-		URL:         "http://192.168.1.141:11434/api/generate",
-		Model:       "dolphin-phi",
-		Temperature: 0.1,
-		Prompt:      "Hello, World!",
-		Stream:      false,
-	}
+func listFiles() {
 
-	// Call GenerateRemote function
-	resp, err := http_client.TextGenerateRemote(req)
+	rows, err := db.GetDatabase().Query("SELECT id, file_path, last_update_datetime FROM files")
 	if err != nil {
-		log.Fatalf("Error calling GenerateRemote: %v", err)
+		log.Println(err)
+	}
+	defer rows.Close()
+
+	// Iterate over the rows and print out the values
+	for rows.Next() {
+		var id int
+		var file_path string
+		var last_update_datetime string
+		err := rows.Scan(&id, &file_path, &last_update_datetime)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Printf("ID: %d, file_path: %s, last_update_datetime: %s\n\n",
+			id, file_path, last_update_datetime)
+	}
+	if err := rows.Err(); err != nil {
+		log.Fatal(err)
 	}
 
-	// Print response
-	fmt.Println("Result:", resp.Result)
-	fmt.Println("Token:", resp.Token)
 }
 
-func ollamaTest2() {
-	// Example input data
-	req := http_client.EmbeddingRequest{
-		URL:    "http://192.168.1.141:11434/api/embeddings",
-		Model:  "nomic-embed-text",
-		Prompt: "Hello, World!",
-	}
+func listFunctions() {
 
-	// Call GenerateRemote function
-	resp, err := http_client.EmbeddingGenerateRemote(req)
+	rows, err := db.GetDatabase().Query("SELECT a.id, function_name, signature, arguments, return, description, b.file_path, line_start, line_end FROM functions a JOIN files b ON a.file_id = b.id")
 	if err != nil {
-		log.Fatalf("Error calling GenerateRemote: %v", err)
+		log.Println(err)
+	}
+	defer rows.Close()
+
+	// Iterate over the rows and print out the values
+	for rows.Next() {
+		var id int
+		var function_name string
+		var signature string
+		var arguments string
+		var return_type string
+		var description string
+		var file_path string
+		var line_start int
+		var line_end int
+		err := rows.Scan(&id, &function_name, &signature, &arguments, &return_type, &description, &file_path, &line_start, &line_end)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Printf("ID: %d, function_name: %s, file_path: %s\ndescription: %s\nsignature: %s\narguments: %s\nreturn_type: %s\nline_start: %d\nline_end: %d\n\n",
+			id, function_name, file_path, description, signature, arguments, return_type, line_start, line_end)
+	}
+	if err := rows.Err(); err != nil {
+		log.Fatal(err)
 	}
 
-	// Print response
-	fmt.Println("Result:", resp.Result)
 }

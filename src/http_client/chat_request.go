@@ -2,6 +2,7 @@ package http_client
 
 import (
 	"bytes"
+	"code_assistant/src/config"
 	"code_assistant/src/llm_prompt"
 	"context"
 	"encoding/json"
@@ -37,10 +38,10 @@ type ChatResponse struct {
 // Create a ChatGenerateRemote request with default value
 func NewChatRequest() ChatRequest {
 	req := ChatRequest{
-		URL:         "http://192.168.1.141:11434/api/chat",
-		Model:       "dolphin-mistral",
-		Temperature: 0.2,
-		Top_p:       0.4,
+		URL:         config.AppConfig.Ollama.BaseUrl + "/api/chat",
+		Model:       config.AppConfig.Ollama.ChatModel,
+		Temperature: 0.15,
+		Top_p:       0.3,
 		Stream:      false,
 		Messages:    []Chat{},
 		System:      llm_prompt.SystemPrompt(),

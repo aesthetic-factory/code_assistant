@@ -2,6 +2,7 @@ package http_client
 
 import (
 	"bytes"
+	"code_assistant/src/config"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -20,6 +21,16 @@ type EmbeddingRequest struct {
 // Response struct represents the output data from EmbeddingGenerateRemote response
 type EmbeddingResponse struct {
 	Result []float32 `json:"embedding"`
+}
+
+// Create a ChatGenerateRemote request with default value
+func NewEmbeddingRequest() EmbeddingRequest {
+	req := EmbeddingRequest{
+		URL:    config.AppConfig.Ollama.BaseUrl + "/api/embeddings",
+		Model:  config.AppConfig.Ollama.EmbeddingModel,
+		Prompt: "",
+	}
+	return req
 }
 
 // EmbeddingGenerateRemote sends a POST request to the remote server with the provided data

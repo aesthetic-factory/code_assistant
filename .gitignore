@@ -21,3 +21,4 @@
 go.work
 code_assistant
 local.db
+.env
